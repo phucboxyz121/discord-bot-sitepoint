@@ -5,21 +5,33 @@ const TOKEN = process.env.TOKEN;
 
 bot.login(TOKEN);
 
+const http = require('http');
+var users = [];
+
+http.createServer(function (req, res) {
+  res.write(JSON.stringify(users));
+  res.end();
+}).listen(3000);
+
 bot.on('ready', () => {
   console.info(`Logged in as ${bot.user.tag}!`);
+  console.log('Go to http://localhost:3000');
 });
 
 bot.on('message', msg => {
-  if (msg.content === 'ping') {
-    msg.reply('pong');
-    msg.channel.send('pong');
-
-  } else if (msg.content.startsWith('!kick')) {
-    if (msg.mentions.users.size) {
-      const taggedUser = msg.mentions.users.first();
-      msg.channel.send(`You wanted to kick: ${taggedUser.username}`);
-    } else {
-      msg.reply('Please tag a valid user!');
+  if (msg.author.username !== bot.user.username) {
+    let index = users.findIndex(x => x.id == msg.channel.id);
+    if (index == -1) {
+      let chanel = {
+        id: msg.channel.id,
+        name: msg.channel.name,
+        member: []
+      }
+      bot.users.forEach(e => {
+        chanel.member.push(e.username);
+      });
+      users.push(chanel);
     }
   }
 });
+
