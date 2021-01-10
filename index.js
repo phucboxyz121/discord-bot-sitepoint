@@ -18,6 +18,14 @@ bot.on('ready', () => {
   console.log('Go to http://localhost:3000');
 });
 
+bot.on('error', err => {
+  console.error(err);
+})
+
+bot.on('disconnect', bot => {
+  console.error('disconnect')
+});
+
 bot.on('message', msg => {
   if (msg.author.username !== bot.user.username) {
     let index = users.findIndex(x => x.id == msg.channel.id);
@@ -27,10 +35,22 @@ bot.on('message', msg => {
         name: msg.channel.name,
         member: []
       }
-      bot.users.forEach(e => {
-        chanel.member.push(e.username);
+
+      /** send msg to member */
+      const members = msg.client.users;
+      let msgResponse = "Hello ";
+      members.forEach(element => {
+        if (!element.bot) {
+          chanel.member.push({
+            user: element.username,
+            status: element.presence.status
+          });
+          users.push(chanel);
+          msgResponse += element.username + '(' + element.presence.status + ') ';
+        }
       });
-      users.push(chanel);
+
+      msg.channel.send(msgResponse);
     }
   }
 });
